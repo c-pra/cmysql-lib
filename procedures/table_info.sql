@@ -130,6 +130,7 @@ BEGIN
 	OPEN curInformationSchema;
 	-- Open the cursor and iterate through tables of the schema. Query the row count 
 	-- for each table and insert the value into the temporary table
+	SET @tbl_count = 0;
 	query_loop: LOOP
 		FETCH curInformationSchema INTO tblname;
 
@@ -138,6 +139,7 @@ BEGIN
 			LEAVE query_loop;
 		END IF;
 
+		SET @tbl_count = @tbl_count + 1;
 		-- Query row count and insert the value into the temporary table
 		SET @sql_instmptbl = CONCAT('INSERT INTO ', tmptbl, ' (name, rows) SELECT ''', tblname, ''', COUNT(*) AS Count FROM ' , dbname, '.', tblname);
 		-- Execute statement
@@ -147,6 +149,8 @@ BEGIN
 	END LOOP;
 
 	CLOSE curInformationSchema;
+	-- Return table count
+	SELECT @tbl_count AS Tables;
 END$$
 
 DELIMITER ;
